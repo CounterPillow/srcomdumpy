@@ -19,6 +19,17 @@ This, for example, is how to dump the GTA Chinatown Wars leaderboards as CSV int
 ./srcomdumpy.py -f CSV -o gtacw.csv 'https://www.speedrun.com/gtacw'
 ```
 
+If no `-o`/`--output` parameter is given, the script will output to the standard output. This means that on Unix-like systems, you can easily pipe the output to another application. In this example, the Celeste leaderboards are downloaded in the (default) JSON format and piped into gzip for compression, which then redirects it to the file `celeste.json.gzip`:
+
+```
+./srcomdumpy.py 'https://www.speedrun.com/celeste' | gzip --best > celeste.json.gz
+```
+
+
+## Limitations
+
+Due to speedrun.com v1 API limitations, it's only possible to retrieve up to 10000 elements per query. The script splits up the queries by category and run status, and asks for sorted results which it then iterates ascending and descending. This means that in practice, a category with more than 20000 verified runs (or 20k rejected runs, or 20k new runs) cannot be fetched in its entirety. The script will warn if this occurred.
+
 
 ## License
 
