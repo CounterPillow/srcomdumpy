@@ -19,7 +19,7 @@ This, for example, is how to dump the GTA Chinatown Wars leaderboards as CSV int
 ./srcomdumpy.py -f CSV -o gtacw.csv 'https://www.speedrun.com/gtacw'
 ```
 
-If no `-o`/`--output` parameter is given, the script will output to the standard output. This means that on Unix-like systems, you can easily pipe the output to another application. In this example, the Celeste leaderboards are downloaded in the (default) JSON format and piped into gzip for compression, which then redirects it to the file `celeste.json.gzip`:
+If no `-o`/`--output` parameter is given, the script will output to the standard output. This means that on Unix-like systems, you can easily pipe the output to another application. In this example, the Celeste leaderboards are downloaded in the (default) JSON format and piped into gzip for compression, which then redirects it to the file `celeste.json.gz`:
 
 ```
 ./srcomdumpy.py 'https://www.speedrun.com/celeste' | gzip --best > celeste.json.gz
