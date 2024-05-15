@@ -6,7 +6,7 @@ Might not work for you, don't care if it doesn't.
 
 Originally made for Odyssic but when I was finished with it he went "nvm somebody else made one for me already don't need it anymore :)". Thanks for letting me know ahead of time, cunt.
 
-Dependencies: Python 3, requests
+Dependencies: Python 3, urllib3
 
 
 ## Usage

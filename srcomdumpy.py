@@ -10,10 +10,9 @@ import json
 import re
 import sys
 
-from time import sleep
 from urllib.parse import urlparse
 
-import requests
+import apireq
 
 
 class Leaderboard:
@@ -29,15 +28,18 @@ class Leaderboard:
 
 
 API_URL = "https://www.speedrun.com/api/v1"
+RQR = apireq.APIRequestor(100, "CounterPillow/srcomdumpy")
 
 
 def lb_from_url(url):
     u = urlparse(url)
     abbrev = u.path.split('/')[1]
 
-    r = requests.get(API_URL + "/games", params={"name": abbrev})
-    r.raise_for_status()
-    j = r.json()
+    rf = RQR.submit(f"{API_URL}/games?name={abbrev}")
+    r = rf.result()
+    if r.status != 200:
+        raise Exception(f"Failed fetching games list, HTTP error {r.status}")
+    j = json.loads(r.data.decode('utf-8'))
 
     game_id = None
     for game in j["data"]:
@@ -48,9 +50,11 @@ def lb_from_url(url):
     if not game_id:
         raise Exception("Can't find the game for this")
 
-    r = requests.get(API_URL + f"/games/{game_id}/categories")
-    r.raise_for_status()
-    j = r.json()
+    rf = RQR.submit(f"{API_URL}/games/{game_id}/categories")
+    r = rf.result()
+    if r.status != 200:
+        raise Exception(f"Failed fetching game categories, HTTP error {r.status}")
+    j = json.loads(r.data.decode('utf-8'))
 
     category_ids = []
     for category in j["data"]:
@@ -66,25 +70,15 @@ def lb_from_url(url):
 def get_leaderboard(url):
     lb = lb_from_url(url)
     runs = []
-    s = requests.Session()
-    tries = 0
     for category_id in lb.category_ids:
         url = f"{API_URL}/runs?category={category_id}&max=200"
         while True:
-            try:
-                r = s.get(url)
-                r.raise_for_status()
-            except Exception as e:
-                if tries == 10:
-                    raise Exception("Too many errors fetching runs")
-                else:
-                    tries += 1
-                    print(f"Received {str(e)}, sleeping for 10 seconds", file=sys.stderr)
-                    sleep(10)
-                    continue
+            rf = RQR.submit(url)
+            r = rf.result()
+            if r.status != 200:
+                raise Exception(f"Request failed for {url} with status {r.status}")
 
-            j = r.json()
-            tries = 0
+            j = json.loads(r.data.decode('utf-8'))
 
             runs.extend(j["data"])
             print(f"Fetched {len(runs)} runs so far...", file=sys.stderr)
