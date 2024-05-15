@@ -56,7 +56,7 @@ def lb_from_url(url):
     for category in j["data"]:
         category_ids.append(category["id"])
 
-    if not category_ids:
+    if len(category_ids) == 0:
         raise Exception(f"Can't find the categories for game ID {game_id}")
 
     lb = Leaderboard(game_id, category_ids)
