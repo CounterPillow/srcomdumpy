@@ -71,27 +71,53 @@ def get_leaderboard(url):
     lb = lb_from_url(url)
     runs = []
     for category_id in lb.category_ids:
-        url = f"{API_URL}/runs?category={category_id}&max=200"
-        while True:
-            rf = RQR.submit(url)
-            r = rf.result()
-            if r.status != 200:
-                raise Exception(f"Request failed for {url} with status {r.status}")
+        # Filter by run status to work around API limits
+        for run_status in ["verified", "new", "rejected"]:
+            url = f"{API_URL}/runs?category={category_id}&status={run_status}&max=200&orderby=submitted&direction=asc"
+            descending = False
+            seen_ids = dict()
+            running = True
+            while running:
+                rf = RQR.submit(url)
+                r = rf.result()
+                if r.status != 200:
+                    raise Exception(f"Request failed for {url} with status {r.status}")
 
-            j = json.loads(r.data.decode('utf-8'))
+                j = json.loads(r.data.decode('utf-8'))
 
-            runs.extend(j["data"])
-            print(f"Fetched {len(runs)} runs so far...", file=sys.stderr)
+                for run in j["data"]:
+                    if not run["id"] in seen_ids:
+                        seen_ids[run["id"]] = True
+                        runs.append(run)
+                    else:
+                        running = False
+                        break
 
-            for link in j["pagination"]["links"]:
-                if link["rel"] == "next":
-                    url = link["uri"]
+                print(f"Fetched {len(runs)} runs so far...", file=sys.stderr)
+
+                if j["pagination"]["max"] > j["pagination"]["size"]:
                     break
-            else:
-                break
 
-            if j["pagination"]["max"] > j["pagination"]["size"]:
-                break
+                for link in j["pagination"]["links"]:
+                    if link["rel"] == "next":
+                        # Partial workaround for srcom cringe.
+                        # See https://github.com/speedruncomorg/api/issues/125
+                        if "offset=10000" in link["uri"]:
+                            if not descending:
+                                print("Switching to desc", file=sys.stderr)
+                                url = f"{API_URL}/runs?category={category_id}&status={run_status}&max=200&orderby=submitted&direction=desc"
+                                descending = True
+                            else:
+                                print("Couldn't fetch the entire leaderboard for "
+                                      f"category {category_id} (>20k runs)",
+                                      file=sys.stderr)
+                                running = False
+                                break
+                        else:
+                            url = link["uri"]
+                        break
+                else:
+                    break
 
     return runs
 

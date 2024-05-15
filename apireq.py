@@ -21,7 +21,8 @@ class APIRequestor:
         self.requests_per_min = requests_per_min
         self._history = list()
         self._pool = urllib3.PoolManager(headers={"User-Agent": user_agent},
-                                         retries=Retry(total=10))
+                                         retries=Retry(total=10,
+                                                       status_forcelist=(413, 420, 429, 503)))
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=pool_executors)
 
     def prune_history(self):
