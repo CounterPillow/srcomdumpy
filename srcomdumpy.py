@@ -148,7 +148,8 @@ def dump_csv(lb, outf):
     fieldnames = {}
     for run in lb:
         fieldnames.update(csv_fieldname_helper("", run))
-    print("Writing a CSV with headers " + ", ".join(sorted(fieldnames.keys())))
+    print("Writing a CSV with headers " + ", ".join(sorted(fieldnames.keys())),
+          file=sys.stderr)
 
     dw = csv.DictWriter(outf, sorted(fieldnames.keys()))
     dw.writeheader()
