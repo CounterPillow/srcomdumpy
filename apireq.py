@@ -26,11 +26,10 @@ class APIRequestor:
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=pool_executors)
 
     def prune_history(self):
-        cur_time = time.monotonic_ns()
-        ns = s_to_ns(60)
+        cur_time = time.monotonic()
 
         while True:
-            if len(self._history) > 0 and self._history[0] + ns <= cur_time:
+            if len(self._history) > 0 and self._history[0] + 60.0 <= cur_time:
                 self._history.pop(0)
             else:
                 break
@@ -56,13 +55,6 @@ class APIRequestor:
                 continue
             break
 
-        self._history.append(time.monotonic_ns())
+        self._history.append(time.monotonic())
 
         return self._executor.submit(self._pool.request, method, url)
-
-
-def s_to_ns(s):
-    """Convert seconds to nanoseconds
-    """
-
-    return s * 10**9
