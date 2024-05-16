@@ -10,21 +10,13 @@ import json
 import re
 import sys
 
+from collections import namedtuple
 from urllib.parse import urlparse
 
 import apireq
 
 
-class Leaderboard:
-    game_id = None
-    category_ids = None
-
-    def __init__(self, game_id, category_ids):
-        self.game_id = game_id
-        self.category_ids = category_ids
-
-    def __repr__(self):
-        return f"Leaderboard(game_id={self.game_id}, category_ids={self.category_ids!r})"
+Leaderboard = namedtuple("Leaderboard", ["game_id", "category_ids"])
 
 
 API_URL = "https://www.speedrun.com/api/v1"
