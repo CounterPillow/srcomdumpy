@@ -24,8 +24,7 @@ class Leaderboard:
         self.category_ids = category_ids
 
     def __repr__(self):
-        cids = repr(self.category_ids)
-        return f"Leaderboard(game_id={self.game_id}, category_ids=[{cids}])"
+        return f"Leaderboard(game_id={self.game_id}, category_ids={self.category_ids!r})"
 
 
 API_URL = "https://www.speedrun.com/api/v1"
